@@ -1,0 +1,7 @@
+OPD WORKLOAD SUMMARY - 2026-05-03
+Prepared by: Sameer Waybhase
+
+Dept: General Medicine | Total Reg: 0   | Completed: 0  
+Dept: Pediatrics      | Total Reg: 0   | Completed: 0  
+Dept: Cardiology      | Total Reg: 0   | Completed: 0  
+Dept: Orthopedics     | Total Reg: 1   | Completed: 0  

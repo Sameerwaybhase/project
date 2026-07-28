@@ -1,0 +1,30 @@
+{
+    "books": {
+        "1234": {
+            "title": "Python8",
+            "author": "Me",
+            "category": "Cding",
+            "is_issued": false
+        },
+        "22": {
+            "title": "POWER OF KNOWLEDGE",
+            "author": "ART OF MIND4",
+            "category": "LIFE",
+            "is_issued": true
+        }
+    },
+    "members": {
+        "12": {
+            "name": "Sam",
+            "issued_books": {},
+            "total_fines": 0
+        },
+        "88": {
+            "name": "ROY",
+            "issued_books": {
+                "22": "2026-05-17"
+            },
+            "total_fines": 0
+        }
+    }
+}
