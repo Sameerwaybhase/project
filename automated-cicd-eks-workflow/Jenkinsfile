@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+    environment {
+        AWS_REGION     = 'us-east-1'
+        ECR_REPO_NAME  = 'flask-api-app'
+        AWS_ACCOUNT_ID = '123456789012'
+        EKS_CLUSTER    = 'production-eks-cluster'
+        IMAGE_TAG      = "${BUILD_NUMBER}"
+    }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Unit Testing') {
+            steps {
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install -r app/requirements.txt
+                    pytest app/test_app.py
+                '''
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${ECR_REPO_NAME}:${IMAGE_TAG} app/"
+            }
+        }
+        stage('Push to Amazon ECR') {
+            steps {
+                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                sh "docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}"
+                sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}"
+            }
+        }
+        stage('Deploy to EKS') {
+            steps {
+                sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER}"
+                sh "sed -i 's|IMAGE_PLACEHOLDER|${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml"
+                sh "kubectl apply -f k8s/deployment.yaml"
+                sh "kubectl apply -f k8s/service.yaml"
+                sh "kubectl rollout status deployment/flask-app-deployment"
+            }
+        }
+    }
+}
